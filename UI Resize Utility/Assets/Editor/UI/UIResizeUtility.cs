@@ -5,125 +5,89 @@ using UnityEngine;
 
 public class UIResizeUtility : MonoBehaviour
 {
-    [MenuItem("Lairinus UI/Anchor Around Object")]
-    private static void uGUIAnchorAroundObject()
-    {
-        foreach (GameObject go in Selection.gameObjects)
-        {
-            var o = go;
-            if (o != null && o.GetComponent<RectTransform>() != null)
-            {
-                var r = o.GetComponent<RectTransform>();
-                var p = o.transform.parent.GetComponent<RectTransform>();
+    #region Change BOTH Width and Height
 
-                var offsetMin = r.offsetMin;
-                var offsetMax = r.offsetMax;
-                var _anchorMin = r.anchorMin;
-                var _anchorMax = r.anchorMax;
-
-                var parent_width = p.rect.width;
-                var parent_height = p.rect.height;
-
-                var anchorMin = new Vector2(_anchorMin.x + (offsetMin.x / parent_width),
-                                            _anchorMin.y + (offsetMin.y / parent_height));
-                var anchorMax = new Vector2(_anchorMax.x + (offsetMax.x / parent_width),
-                                            _anchorMax.y + (offsetMax.y / parent_height));
-
-                r.anchorMin = anchorMin;
-                r.anchorMax = anchorMax;
-
-                r.offsetMin = new Vector2(0, 0);
-                r.offsetMax = new Vector2(0, 0);
-                r.pivot = new Vector2(0.5f, 0.5f);
-            }
-        }
-    }
-
-    // --- Both --- //
-
-    [MenuItem("L-Resizer/Width and Height/10% of Parent WH")]
+    [MenuItem("L-Resizer/Percentage/Width and Height/10% of Parent WH")]
     private static void ResizeElement10ParentWH()
     {
         ResizeElementInternalEditor(0.1f, 0.1f, true);
     }
 
-    [MenuItem("L-Resizer/Width and Height/25% of Parent WH")]
+    [MenuItem("L-Resizer/Percentage/Width and Height/25% of Parent WH")]
     private static void ResizeElement25ParentWH()
     {
         ResizeElementInternalEditor(0.25f, 0.25f, true);
     }
 
-    [MenuItem("L-Resizer/Width and Height/50% of Parent WH")]
-    private static void ResizeElementHalfParentWH()
-    {
-        ResizeElementInternalEditor(0.5f, 0.5f, true);
-    }
-
-    [MenuItem("L-Resizer/Width and Height/100% of Parent WH")]
+    [MenuItem("L-Resizer/Percentage/Width and Height/100% of Parent WH")]
     private static void ResizeElementFullParentWH()
     {
         ResizeElementInternalEditor(1, 1, true);
     }
 
-    // --- Width --- //
+    [MenuItem("L-Resizer/Percentage/Width and Height/50% of Parent WH")]
+    private static void ResizeElementHalfParentWH()
+    {
+        ResizeElementInternalEditor(0.5f, 0.5f, true);
+    }
 
-    [MenuItem("L-Resizer/Width/10% of Parent Width")]
+    #endregion Change BOTH Width and Height
+
+    #region Change ONLY Width
+
+    [MenuItem("L-Resizer/Percentage/Width/10% of Parent Width")]
     private static void ResizeElement10ParentWidth()
     {
         ResizeElementInternalEditor(0.1f, -1, true);
     }
 
-    [MenuItem("L-Resizer/Width/25% of Parent Width")]
+    [MenuItem("L-Resizer/Percentage/Width/25% of Parent Width")]
     private static void ResizeElement25ParentWidth()
     {
         ResizeElementInternalEditor(0.25f, -1, true);
     }
 
-    [MenuItem("L-Resizer/Width/50% of Parent Width")]
-    private static void ResizeElementHalfParentWidth()
-    {
-        ResizeElementInternalEditor(0.5f, -1, true);
-    }
-
-    [MenuItem("L-Resizer/Width/100% of Parent Width")]
+    [MenuItem("L-Resizer/Percentage/Width/100% of Parent Width")]
     private static void ResizeElementFullParentWidth()
     {
         ResizeElementInternalEditor(1, -1, true);
     }
 
-    // --- Height --- //
+    [MenuItem("L-Resizer/Percentage/Width/50% of Parent Width")]
+    private static void ResizeElementHalfParentWidth()
+    {
+        ResizeElementInternalEditor(0.5f, -1, true);
+    }
 
-    [MenuItem("L-Resizer/Height/10% of Parent Height")]
+    #endregion Change ONLY Width
+
+    #region Change ONLY Height
+
+    [MenuItem("L-Resizer/Percentage/Height/10% of Parent Height")]
     private static void ResizeElement10ParentHeight()
     {
         ResizeElementInternalEditor(-1, 0.1f, true);
     }
 
-    [MenuItem("L-Resizer/Height/25% of Parent Height")]
+    [MenuItem("L-Resizer/Percentage/Height/25% of Parent Height")]
     private static void ResizeElement25ParentHeight()
     {
         ResizeElementInternalEditor(-1, 0.25f, true);
     }
 
-    [MenuItem("L-Resizer/Height/50% of Parent Height")]
-    private static void ResizeElementHalfParentHeight()
-    {
-        ResizeElementInternalEditor(-1, 0.5f, true);
-    }
-
-    [MenuItem("L-Resizer/Height/100% of Parent Height")]
+    [MenuItem("L-Resizer/Percentage/Height/100% of Parent Height")]
     private static void ResizeElementFullParentHeight()
     {
         ResizeElementInternalEditor(-1, 1, true);
     }
 
-    private static void ResizeElementInternalEditor(float width, float height, bool usePercentage)
+    [MenuItem("L-Resizer/Percentage/Height/50% of Parent Height")]
+    private static void ResizeElementHalfParentHeight()
     {
-        foreach (GameObject go in Selection.gameObjects)
-        {
-            ResizeElement(go, width, height, usePercentage);
-        }
+        ResizeElementInternalEditor(-1, 0.5f, true);
     }
+
+    #endregion Change ONLY Height
 
     public static void ResizeElement(GameObject go, float width, float height, bool usePercentage)
     {
@@ -138,6 +102,26 @@ public class UIResizeUtility : MonoBehaviour
                 return;
 
             ResizeElementByPXAndPercentage(thisRT, parentRT, usePercentage, width, height);
+        }
+    }
+
+    private static Dictionary<GameObject, RectTransform> _cachedTransforms = new Dictionary<GameObject, RectTransform>();
+
+    private static RectTransform GetRectTransformFromGameObject(GameObject go)
+    {
+        if (go == null)
+            return null;
+
+        if (_cachedTransforms.ContainsKey(go))
+        {
+            Debug.Log("Rect is Cached");
+            return _cachedTransforms[go];
+        }
+        else
+        {
+            Debug.Log("Rect is not Cached");
+            _cachedTransforms.Add(go, go.GetComponent<RectTransform>());
+            return _cachedTransforms[go];
         }
     }
 
@@ -173,23 +157,11 @@ public class UIResizeUtility : MonoBehaviour
         Debug.Log(thisRT.sizeDelta);
     }
 
-    private static RectTransform GetRectTransformFromGameObject(GameObject go)
+    private static void ResizeElementInternalEditor(float width, float height, bool usePercentage)
     {
-        if (go == null)
-            return null;
-
-        if (_cachedTransforms.ContainsKey(go))
+        foreach (GameObject go in Selection.gameObjects)
         {
-            Debug.Log("Rect is Cached");
-            return _cachedTransforms[go];
-        }
-        else
-        {
-            Debug.Log("Rect is not Cached");
-            _cachedTransforms.Add(go, go.GetComponent<RectTransform>());
-            return _cachedTransforms[go];
+            ResizeElement(go, width, height, usePercentage);
         }
     }
-
-    private static Dictionary<GameObject, RectTransform> _cachedTransforms = new Dictionary<GameObject, RectTransform>();
 }
