@@ -297,8 +297,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\UI\Resize Window\UIResizedWindowUtilityModel.cs" />
-    <Compile Include="Assets\Editor\UI\Resize Window\UIResizeWindowController.cs" />
+    <Compile Include="Assets\Editor\UI\Resize Window\UIResizeWindow.cs" />
     <Compile Include="Assets\Editor\UI\UIResizeUtility.cs" />
   </ItemGroup>
   <ItemGroup>
