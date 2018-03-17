@@ -220,9 +220,7 @@ namespace Lairinus.UI.Editor
                 GUILayout.EndHorizontal();
             }
 
-            // Pixel Width
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(30);
+            // Pixel Width and Height
             if (_resizeType == ResizeUnitType.Pixels)
             {
                 // Pixel Width
@@ -237,7 +235,6 @@ namespace Lairinus.UI.Editor
                 _desiredHeight = EditorGUILayout.Slider("Height (in Pixels)", _desiredHeight, 0, 4000);
                 GUILayout.EndHorizontal();
             }
-            GUILayout.EndHorizontal();
 
             // Warning - Width is <= 0
             if (_desiredWidth <= 0 && !_hideWarningMessages)
