@@ -7,6 +7,12 @@ namespace Lairinus.UI.Editor
 {
     public class UIResizeWindow : EditorWindow
     {
+        /*
+         * Lairinus.UI Element Resizer
+         * ---------------------------
+         * Allows users to change the size of GameObjects that are selected in the Heirarchy so long as they have a RectTransform component
+         */
+
         public enum ResizeUnitType
         {
             Percentage,
@@ -14,22 +20,15 @@ namespace Lairinus.UI.Editor
         }
 
         private static List<RectTransform> _selectedRectTransforms = new List<RectTransform>();
-
         private bool _alterSizeBasedOnParent = true;
-
         private float _desiredHeight = 0;
-
         private float _desiredWidth = 0;
-
-        private bool _keepPosition = true;
-
-        private bool _hideWarningMessages = false;
-
         private bool _enableDebugging = false;
-
+        private bool _hideMessages = false;
+        private bool _keepPosition = true;
         private ResizeUnitType _resizeType = ResizeUnitType.Percentage;
 
-        [MenuItem("Window/Lairinus/UI Element Resizer")]
+        [MenuItem("Lairinus UI/Windows/UI Resizer tool")]
         private static void ShowWindow()
         {
             /*
@@ -43,7 +42,7 @@ namespace Lairinus.UI.Editor
             ew.minSize = new Vector2(500, 500);
         }
 
-        private void UpdateSelectedObject()
+        private void HandleSelectionChanged()
         {
             /*
              * Internal use
@@ -63,21 +62,21 @@ namespace Lairinus.UI.Editor
 
         private void OnDisable()
         {
-            Selection.selectionChanged -= UpdateSelectedObject;
+            Selection.selectionChanged -= HandleSelectionChanged;
         }
 
         private void OnEnable()
         {
-            Selection.selectionChanged += UpdateSelectedObject;
+            Selection.selectionChanged += HandleSelectionChanged;
         }
 
         private void OnGUI()
         {
             try
             {
-                ShowGUI_WindowConfiguration();
-                ShowGUI_ResizeConfiguration();
-                ShowGUI_ResizeConfirmation();
+                ShowGUI_WindowConfigurationInternal();
+                ShowGUI_ResizeConfigurationInternal();
+                ShowGUI_ResizeConfirmationInternal();
             }
             catch (System.Exception ex)
             {
@@ -145,32 +144,7 @@ namespace Lairinus.UI.Editor
                 Debug.Log(string.Format(Debugger.finalElementSize, thisRT.name, rectFinalWidth, rectFinalHeight));
         }
 
-        private void ShowGUI_WindowConfiguration()
-        {
-            /*
-             * Internal use only
-             * -----------------
-             * Shows general information about the Selected GameObjects
-             */
-
-            // Header Box
-            EditorGUILayout.HelpBox("Lairinus.UI UI Resizer Tool\n\nIn order to change the size of elements:\n1.Select UI Elements from the heirarchy\n2.Configure the desired sizes for the UI Elements\n3.Click the \"Resize\" button", MessageType.Info);
-
-            _enableDebugging = EditorGUILayout.Toggle(new GUIContent("Enable Debugging", "Enabling debugging can show you exactly where and why something isn't being resized correctly."), _enableDebugging);
-            _hideWarningMessages = EditorGUILayout.Toggle(new GUIContent("Hide Warning Messages", "Hiding Warning messages will clean up this Window's UI, however it is not recommended for new users"), _hideWarningMessages);
-            GUILayout.Space(30);
-
-            EditorGUILayout.LabelField(_selectedRectTransforms.Count + " Resizable element(s) are selected!", EditorStyles.boldLabel);
-
-            if (Selection.gameObjects.Length != _selectedRectTransforms.Count)
-            {
-                if (!_hideWarningMessages)
-                    EditorGUILayout.HelpBox("Some of the selected GameObjects do not have a RectTransform. Only GameObjects with a RectTransform can have their size adjusted", MessageType.Warning);
-            }
-            GUILayout.Space(30);
-        }
-
-        private void ShowGUI_ResizeConfiguration()
+        private void ShowGUI_ResizeConfigurationInternal()
         {
             /*
              * Internal use only
@@ -220,7 +194,6 @@ namespace Lairinus.UI.Editor
                 GUILayout.EndHorizontal();
             }
 
-            // Pixel Width and Height
             if (_resizeType == ResizeUnitType.Pixels)
             {
                 // Pixel Width
@@ -237,25 +210,42 @@ namespace Lairinus.UI.Editor
             }
 
             // Warning - Width is <= 0
-            if (_desiredWidth <= 0 && !_hideWarningMessages)
+            if (_desiredWidth <= 0 && !_hideMessages)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(30);
-                EditorGUILayout.HelpBox("Warning - the Width is set to 0, so this Element's Width value will not be changed. In order to change the Width, set the Width to a value greater than 0.", MessageType.Warning);
+                EditorGUILayout.HelpBox("The Width is set to 0, so this Element's Width value will not be changed. In order to change the Width, set the Width to a value greater than 0.", MessageType.Info);
                 GUILayout.EndHorizontal();
             }
 
-            // WArning - Height is <= 0
-            if (_desiredHeight <= 0 && !_hideWarningMessages)
+            // Warning - Height is <= 0
+            if (_desiredHeight <= 0 && !_hideMessages)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(30);
-                EditorGUILayout.HelpBox("Warning - the Height is set to 0, so this Element's Height value will not be changed. In order to change the Height, set the Height to a value greater than 0.", MessageType.Warning);
+                EditorGUILayout.HelpBox("The Height is set to 0, so this Element's Height value will not be changed. In order to change the Height, set the Height to a value greater than 0.", MessageType.Info);
                 GUILayout.EndHorizontal();
+            }
+
+            // Show Selected Resizable Elements
+            GUILayout.Space(20);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(30);
+            EditorGUILayout.LabelField(_selectedRectTransforms.Count + " Resizable element(s) are selected!", EditorStyles.largeLabel);
+            GUILayout.EndHorizontal();
+            if (Selection.gameObjects.Length != _selectedRectTransforms.Count)
+            {
+                if (!_hideMessages)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Space(30);
+                    EditorGUILayout.HelpBox("Some of the selected GameObjects do not have a RectTransform. Only GameObjects with a RectTransform can have their size adjusted", MessageType.Warning);
+                    GUILayout.EndHorizontal();
+                }
             }
         }
 
-        private void ShowGUI_ResizeConfirmation()
+        private void ShowGUI_ResizeConfirmationInternal()
         {
             // Resize Element Button
             GUILayout.BeginArea(new Rect((Screen.width / 2) - 50, 440, 100, 100));
@@ -265,7 +255,7 @@ namespace Lairinus.UI.Editor
                 {
                     if (_enableDebugging)
                     {
-                        Debug.Log(Debugger.selectedRectTransform);
+                        Debug.Log(Debugger.selectedRectTransformCountIsZero);
                         return;
                     }
                 }
@@ -282,11 +272,27 @@ namespace Lairinus.UI.Editor
             GUILayout.EndArea();
         }
 
+        private void ShowGUI_WindowConfigurationInternal()
+        {
+            /*
+             * Internal use only
+             * -----------------
+             * Shows general information about the Selected GameObjects
+             */
+
+            // Header Box
+            EditorGUILayout.HelpBox("Lairinus.UI UI Resizer Tool\n\nIn order to change the size of elements:\n1.Select UI Elements from the heirarchy\n2.Configure the desired sizes for the UI Elements\n3.Click the \"Resize\" button", MessageType.Info);
+
+            _enableDebugging = EditorGUILayout.Toggle(new GUIContent("Enable Debugging", "Enabling debugging can show you exactly where and why something isn't being resized correctly."), _enableDebugging);
+            _hideMessages = EditorGUILayout.Toggle(new GUIContent("Hide Messages", "Hiding Messages will clean up this Window's UI, however it is not recommended for new users"), _hideMessages);
+            GUILayout.Space(20);
+        }
+
         private class Debugger
         {
             public const string finalElementSize = "UI Resizer DEBUGGING: The final size of {0} is {1} Width and {2} Height (in Pixels)";
-            public const string selectedRectTransform = "UI Resizer DEBUGGING: There are no valid selected RectTransforms.\n In order to get valid Rect Transforms, select GameObjects in the heirarchy that have a RectTransform component";
             public const string parentRectIsNull = "UI Resizer DEBUGGING: GameObject {0} does not have a parent.\n No parent was found, but you specifed that you want to base this object's size off of the parent.";
+            public const string selectedRectTransformCountIsZero = "UI Resizer DEBUGGING: There are no valid selected RectTransforms to resize.\n In order to get valid Rect Transforms, select GameObjects in the heirarchy that have a RectTransform component";
         }
     }
 }

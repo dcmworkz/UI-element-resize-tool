@@ -298,7 +298,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Editor\UI\Resize Window\UIResizeWindow.cs" />
-    <Compile Include="Assets\Editor\UI\UIResizeUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Editor\UI\Resize Window\README.txt" />

@@ -1,7 +1,8 @@
 =================================
 
 Lairinus Element Resizer
-    - Developed by Dillon Mosono (lairinus@gmail.com, dillonmosono@gmail.com, Lairinus, Shingox, @Lairinus)
+    - Part of the Lairinus.UI project
+    - Developed by Dillon Mosono (lairinus@gmail.com, dillonmosono@gmail.com, Lairinus, Shingox)
 	- http://lairinus.com
 
 =================================
